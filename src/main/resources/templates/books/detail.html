@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:insert="~{/fragments/resources :: head(pageTitle='Book Detail')}">
+<body>
+<nav th:replace="~{/fragments/navbar :: navbar(current='books')}"></nav>
+<div class="container" th:object="${book}">
+  <h1 th:text="*{title}"></h1>
+  <h2 class="text-muted" th:text="|Written by *{authors}|"></h2>
+  <hr>
+  <!-- dettagli del libro -->
+  <section class="row">
+    <!-- dettagli del libro -->
+    <div class="col-4">
+      <dl>
+        <dt>Publisher</dt>
+        <dd th:text="*{publisher}"></dd>
+        <dt>Year</dt>
+        <dd th:text="*{year}"></dd>
+        <dt>ISBN</dt>
+        <dd th:text="*{isbn}"></dd>
+        <dt>Number of copies</dt>
+        <dd>
+          <span th:text="*{numberOfCopies}"></span>
+          <span th:text="|(*{availableCopies} available)|"></span>
+        </dd>
+        <dt>Created at</dt>
+        <!--dd th:text="${book.getFormattedCreatedAt()}"></dd-->
+        <!-- dd th:text="*{formattedCreatedAt}"></dd -->
+        <dd th:text="*{#temporals.format(createdAt, 'dd/MM/yyyy HH:MM')}"></dd>
+        <dt>Synopsis</dt>
+        <dd th:text="*{synopsis}"></dd>
+      </dl>
+    </div>
+    <!-- cover -->
+    <div class="col-4">
+      <img class="img-fluid"
+           th:src="@{|/files/cover/*{id}|}"
+           alt="cover">
+    </div>
+    <!-- categorie -->
+    <div class="col-4">
+      <h3>Categories</h3>
+      <ul th:if="*{categories.size() > 0}">
+        <li th:each="cat : *{categories}" th:text="${cat.name}"></li>
+      </ul>
+      <div th:unless="*{categories.size() > 0}" class="alert alert-info">No categories</div>
+    </div>
+  </section>
+  <!-- prestiti del libro -->
+  <section>
+    <h2>Borrowings</h2>
+    <!-- link per vedere il form di creazione del borrowing -->
+    <div class="my-3">
+      <a
+          class="btn btn-primary"
+          th:href="@{/borrowings/create(bookId=${book.id})}"
+          th:if="${book.availableCopies > 0}"
+      >
+        Add
+        borrowing</a>
+    </div>
+    <table class="table" th:if="${book.borrowings.size() > 0}">
+      <thead>
+      <tr>
+        <th>Borrowing Date</th>
+        <th>Expiry Date</th>
+        <th>Return Date</th>
+        <th>Note</th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="borrowing : ${book.borrowings}" th:object="${borrowing}">
+        <td th:text="*{#temporals.format(borrowingDate, 'dd/MM/yyyy')}"></td>
+        <td th:text="*{#temporals.format(expiryDate, 'dd/MM/yyyy')}"></td>
+        <td th:text="*{#temporals.format(returnDate, 'dd/MM/yyyy')}"></td>
+        <td th:text="*{note}"></td>
+        <td class="d-flex align-items-center">
+          <a class="btn btn-primary me-1" th:href="@{|/borrowings/edit/*{id}|}"><i
+              class="fa-solid fa-pen-to-square"></i></a>
+          <form
+              th:action="@{|/borrowings/delete/*{id}|}"
+              method="post"
+          >
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-trash-can"></i>
+            </button>
+          </form>
+        </td>
+
+      </tr>
+      </tbody>
+    </table>
+    <!-- messaggio se la lista dei borrowing è vuota -->
+    <div class="alert alert-info" th:unless="${book.borrowings.size() > 0}">
+      There are no borrowings
+    </div>
+  </section>
+</div>
+</body>
+</html>
